@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Quotation - Inoit</title>
+    <!-- Script to enable PDF download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0f172a; /* Navy Blue */
+            --secondary-color: #334155; /* Slate */
+            --accent-color: #2563eb; /* Royal Blue */
+            --bg-color: #f8fafc;
+            --paper-color: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --success-color: #16a34a;
+            --highlight-bg: #f0f9ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* This is the container that gets printed */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--paper-color);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: visible; /* Changed to visible for better PDF rendering */
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .brand span {
+            color: var(--accent-color);
+        }
+
+        .quote-meta {
+            text-align: right;
+        }
+
+        .quote-meta h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .quote-meta p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Body Content */
+        .content {
+            padding: 40px;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 40px;
+            page-break-after: avoid; /* Prevent title from being alone at bottom of page */
+        }
+
+        .address-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .address-block h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--secondary-color);
+            margin-bottom: 5px;
+        }
+
+        .address-block p {
+            font-weight: 600;
+        }
+
+        /* Project Cards */
+        .project-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: box-shadow 0.2s ease;
+            page-break-inside: avoid; /* Keeps the card from being cut in half */
+        }
+
+        .project-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-header {
+            background-color: #f1f5f9;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .project-header h3 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .project-badge {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .project-body {
+            padding: 20px;
+        }
+
+        .tech-stack {
+            background-color: var(--highlight-bg);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .tech-stack strong {
+            color: var(--primary-color);
+        }
+
+        /* Feature Table Styles */
+        .feature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .feature-table th {
+            text-align: left;
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .feature-table td {
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+            vertical-align: top;
+        }
+        
+        .feature-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .check-icon {
+            color: var(--success-color);
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .price-tag {
+            text-align: right;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-top: 15px;
+        }
+
+        /* Trust/Psychological Box (Moved to end) */
+        .trust-box {
+            background: linear-gradient(to right, #eff6ff, #ffffff);
+            border: 1px solid #bfdbfe;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+
+        .trust-box h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .trust-box ul {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .trust-box li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .trust-box li::before {
+            content: "-";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        /* Summary Table */
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .summary-table th, .summary-table td {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-table th {
+            background-color: #f8fafc;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .summary-table tr:last-child td {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--primary-color);
+        }
+
+        .text-right { text-align: right; }
+
+        /* Footer */
+        footer {
+            background-color: var(--secondary-color);
+            color: #94a3b8;
+            padding: 40px;
+            font-size: 0.85rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .actions {
+            text-align: center;
+            margin: 20px 0;
+            margin-top: 40px;
+            display: none; /* Hidden, but div remains as requested */
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background 0.3s;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #1e293b;
+        }
+
+        /* Print/PDF Styles - Specific for HTML2PDF */
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; }
+            .btn { display: none; }
+            .project-card { break-inside: avoid; }
+        }
+        
+        @media (max-width: 768px) {
+            .address-grid {
+                grid-template-columns: 1fr;
+            }
+            header { flex-direction: column; text-align: center; gap: 20px; }
+            .quote-meta { text-align: center; }
+            .project-header { flex-direction: column; gap: 10px; text-align: center; }
+            .feature-table td { display: block; width: 100%; }
+            .feature-table th { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="quotation-content">
+    <header>
+        <div class="brand">
+            <h1>Inoit<span>.</span></h1>
+            <p>Digital Solutions Agency</p>
+        </div>
+        <div class="quote-meta">
+            <h2>QUOTATION</h2>
+            <p>Date: October 26, 2023</p>
+            <p>Quote #: Q-2026-IN-884</p>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="address-grid">
+            <div class="address-block">
+                <h3>Prepared For</h3>
+                <p>Ayush</p>
+            </div>
+            <div class="address-block" style="text-align: right;">
+                <h3>Prepared By</h3>
+                <p>Inoit Agency</p>
+            </div>
+        </div>
+
+        <p style="margin-bottom: 30px;">
+            Dear <strong>Ayush</strong>,<br>
+            Thank you for consulting Inoit. We understand that as a working professional, you need a project that isn't just "functional" but is robust, well-documented, and ready to impress your evaluators. Based on the strict frameworks (Flask/Vue/Redis/Celery) and the complex logic required, we have tailored this proposal specifically for your success.
+        </p>
+
+        <div class="section-title">Project Breakdown</div>
+
+        <!-- Project 1: HMS -->
+        <article class="project-card">
+            <div class="project-header">
+                <h3>1. Hospital Management System (HMS)</h3>
+                <span class="project-badge">Highest Complexity</span>
+            </div>
+            <div class="project-body">
+                <div class="tech-stack">
+                    <strong>Stack:</strong> Flask, VueJS, SQLite, Redis, Celery, Bootstrap.
+                </div>
+                
+                <table class="feature-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%">Core Feature</th>
+                            <th>Implementation Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="check-icon">+</span>Multi-Role System</td>
+                            <td>Distinct Dashboards for Admin, Doctors, and Patients.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="check-icon">+</span>Appointment Logic</td>
+                            <td>Scheduling, Conflict Prevention, and Status Updates.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="check-icon">+</span>Backend Jobs</td>
+                            <td><strong>Celery</strong> for Daily Reminders &amp; Monthly Reports.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="check-icon">+</span>Performance</td>
+                            <td><strong>Redis</strong> Caching implemented for Doctor/Search APIs.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="check-icon">+</span>Database</td>
+                            <td>Programmatic SQLite creation (No manual DB tools).</td>
+                        </tr>
+                        <tr>
+                            <td><span class="check-icon">+</span>Async Export</td>
+                            <td>CSV Export triggered via Batch Job.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="price-tag">₹9,500.00</div>
+            </div>
+        </article>
+
+        <!-- Project 2: PPA -->
+        <article class="project-card">
+            <div class="project-header">
+                <h3>2. Placement Portal Application (PPA)</h3>
+                <span class="project-badge">High Complexity</span>
+            </div>
+            <div class="project-body">
+                <div class="tech-stack">
+                    <strong>Stack:</strong> Flask, VueJS, SQLite, Redis, Celery, Bootstrap.
+                </div>
+                
+                <table class="feature-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%">Core Feature</th>
+                            <th>Implementation Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="check-icon">+</span>Multi-Role System</td>
+                            <td>Distinct Dashboards for Admin, Companies, and Students.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="check-icon">+</span>Approval Workflow</td>
+                            <td>Admin approval for Companies &amp; Placement Drives.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="check-icon">+</span>Backend Jobs</td>
+                            <td><strong>Celery</strong> for Deadline Reminders &amp; Monthly Activity Reports.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="check-icon">+</span>Performance</td>
+                            <td><strong>Redis</strong> Caching for Drive listings &amp; Search.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="check-icon">+</span>Application Logic</td>
+                            <td>Eligibility Checks &amp; Status Tracking.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="check-icon">+</span>Async Export</td>
+                            <td>Student Application History via CSV Batch Job.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="price-tag">₹8,500.00</div>
+            </div>
+        </article>
+
+        <div class="section-title">Why Inoit?</div>
+        <div class="trust-box">
+            <h3>Your Strategic Advantage</h3>
+            <p style="font-size: 0.9rem; margin-bottom: 15px;">We understand the stress of final submissions. We don't just write code; we build your case study.</p>
+            <ul>
+                <li><strong>Strict Adherence Guarantee:</strong> We use ONLY the frameworks listed. No substitutions, no rejection risks.</li>
+                <li><strong>Viva-Ready Code:</strong> Clean, commented architecture so you can explain every module confidently.</li>
+                <li><strong>"It Just Works" Delivery:</strong> We handle the complex logic locally so you don't have to debug it.</li>
+            </ul>
+        </div>
+
+        <div class="section-title">Financial Summary</div>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="text-right">Amount (INR)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Hospital Management System (HMS) V2</td>
+                    <td class="text-right">₹9,500.00</td>
+                </tr>
+                <tr>
+                    <td>Placement Portal Application (PPA) V2</td>
+                    <td class="text-right">₹8,500.00</td>
+                </tr>
+                <tr>
+                    <td><strong>Total Quote Amount</strong></td>
+                    <td class="text-right"><strong>₹18,000.00</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="actions">
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-grid">
+            <div>
+                <h3>Terms &amp; Conditions</h3>
+                <ul style="list-style: none; margin-top: 10px; line-height: 1.8;">
+                    <li>1. 50% advance to initiate development.</li>
+                    <li>2. Complete source code &amp; documentation provided upon full payment.</li>
+                    <li>3. Strict adherence to the provided mandatory frameworks.</li>
+                </ul>
+            </div>
+        </div>
+        <div style="margin-top: 30px; text-align: center; border-top: 1px solid #475569; padding-top: 20px;">
+            © 2026 Inoit Technologies. All Rights Reserved.
+        </div>
+    </footer>
+</div>
+
+<script>
+    function downloadQuotation() {
+        // Select the element to be converted
+        const element = document.getElementById('quotation-content');
+        
+        // Options for the PDF generation
+        const opt = {
+            margin:       0.2, // Reduced margin to ensure content fits
+            filename:     'Inoit_Quotation_Ayush.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { 
+                scale: 2, 
+                useCORS: true,
+                // Important: This ensures html2canvas captures the scroll height correctly
+                logging: true
+            },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+            // Pagebreak options to prevent cutting text in half
+            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+
+        // Generate and download the PDF
+        html2pdf().set(opt).from(element).save();
+    }
+</script>
+
+</body>
+</html>
